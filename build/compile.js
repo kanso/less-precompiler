@@ -1,7 +1,6 @@
-var less = require('../less.js/lib/less'),
+var less = require('less'),
     async = require('async'),
-    logger = require('kanso/logger'),
-    utils = require('kanso/utils'),
+    utils = require('kanso-utils/utils'),
     spawn = require('child_process').spawn,
     path = require('path');
 
@@ -13,12 +12,12 @@ function compileLess(project_path, filename, settings, callback) {
         if (!exists) {
             return callback(new Error('File does not exist: ' + filename));
         }
-        logger.info('compiling', utils.relpath(filename, project_path));
+        console.log('Compiling ' + utils.relpath(filename, project_path));
         var args = [filename];
         if (settings.less.compress) {
             args.unshift('--compress');
         }
-        var lessc = spawn(__dirname + '/../less.js/bin/lessc', args);
+        var lessc = spawn(__dirname + '/../node_modules/less/bin/lessc', args);
 
         var css = '';
         var err_out = '';
