@@ -1,5 +1,10 @@
-## Usage
+#less-precompiler
+The less-precompiler allows you to author your stylesheets with the CSS superset of
+[LESS](http://lesscss.org/#docs). It supports `@variables`, `.mixins()` and lots of
+other really useful stuff. The less files will get compiled and _attached to your 
+couchapp on every build and can even be compressed.
 
+###Install
 Add `less-precompiler` to your dependencies section in `kanso.json`.
 
 ```javascript
@@ -10,22 +15,31 @@ Add `less-precompiler` to your dependencies section in `kanso.json`.
   }
 ```
 
-To tell the precompiler which less files to transform, add a section called `less`
-to `kanso.json` and put in the files you want to process.
+> run `kanso install` to fetch the package
+
+###Configure
+To tell the precompiler which files to transform, add the section `less`,
+and in a key called `compile`, list the files you want to process.
 
 ```javascript
   ...
   "less": {
     "compile": [ "css/style.less", ... ]
   }
+  ...
+  "dependencies": {
+    "less-precompiler": null,
+    ...
+  }
+
 ```
 
-In this case, less will compile the file `css/style.less` to `css/style.css` and kanso will
-upload it to `_attachments/css/style.css`.
+> Running `kanso push` will compile the file `css/style.less` to 
+`css/style.css` and upload it to `_attachments/css/style.css`.
 
 ###Compression
 
-The less-preprocessor can be told to compress the output through the `compress` flag.
+To enable compression of the output, add the `compress` flag and set it to `true`.
 
 ```javascript
   ...
