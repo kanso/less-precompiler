@@ -61,13 +61,6 @@ module.exports = function (root, path, settings, doc, callback) {
         });
     },
     function (err) {
-        if (settings.less.remove_from_attachments) {
-            for (var k in (doc._attachments || {})) {
-                if (/\.less$/.test(k)) {
-                    delete doc._attachments[k];
-                }
-            }
-        }
         callback(err, doc);
     });
 };
