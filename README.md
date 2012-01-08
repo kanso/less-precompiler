@@ -58,9 +58,9 @@ To enable compression of the output, add the `compress` flag and set it to `true
 
 ### Removing original .less files
 
-You can also remove and .less files from attachments (if you placed them inside a
+You can also remove any .less files from attachments (if you placed them inside a
 directory also added as static files), by adding the `remove_from_attachments`
-property. This will remove any attachment with a `.less` extension!
+property. This will remove all attachment with a `.less` extension!
 
 ```javascript
   ...
