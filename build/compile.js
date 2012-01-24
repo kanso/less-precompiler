@@ -2,6 +2,7 @@ var less = require('less'),
     async = require('async'),
     utils = require('kanso-utils/utils'),
     spawn = require('child_process').spawn,
+    attachments = require('kanso-utils/attachments'),
     path = require('path');
 
 
@@ -53,10 +54,7 @@ module.exports = function (root, path, settings, doc, callback) {
             if (err) {
                 return cb(err);
             }
-            doc._attachments[name] = {
-                content_type: 'text/css',
-                data: new Buffer(css).toString('base64')
-            };
+            attachments.add(doc, name, name, css);
             cb();
         });
     },
