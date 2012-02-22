@@ -30,18 +30,15 @@ function compileLess(doc, project_path, f, compress, callback) {
                 paths: [path.dirname(f)].concat(doc._less_paths),
                 filename: f
             }
-            console.log(['creating parser', options]);
             var parser = new (less.Parser)(options);
 
             try {
-                console.log('parsing ' + f);
                 parser.parse(data, function (err, root) {
                     if (err) {
                         less.writeError(err, options);
                         return callback(err);
                     }
                     try {
-                        console.log('converting to css');
                         callback(null, root.toCSS(options));
                     }
                     catch (e) {
@@ -70,7 +67,6 @@ module.exports = function (root, _path, settings, doc, callback) {
                 return cb(err);
             }
             try {
-                console.log(['adding to attachments', att_path]);
                 attachments.add(doc, att_path, att_path, css);
             }
             catch (e) {
