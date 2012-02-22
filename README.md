@@ -56,6 +56,22 @@ To enable compression of the output, add the `compress` flag and set it to `true
 ```
 
 
+### Include paths
+
+Less files can include other less templates, sometimes it's useful for a
+package to provide uncompiled .less files for use in a project. Before you
+can include them in the project's templates, the package providing the
+files needs to add the less path. This is so the compiler knows where to
+lookup the file when you `@include` it.
+
+```javascript
+  ...
+  "less": {
+    "paths": ["./bootstrap"]
+  }
+```
+
+
 ### Removing original .less files
 
 You can also remove any .less files from attachments (if you placed them inside a
