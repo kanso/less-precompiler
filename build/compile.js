@@ -22,12 +22,15 @@ function compileLess(doc, project_path, f, compress, callback) {
             if (err) {
                 return callback(err);
             }
+            var dir = path.dirname(f);
+            var paths = [dir].concat(Object.keys(doc._less_paths));
+
             var options = {
                 silent: false,
                 verbose: true,
                 color: true,
                 compress: compress,
-                paths: [path.dirname(f)].concat(doc._less_paths),
+                paths: paths,
                 filename: f
             }
             var parser = new (less.Parser)(options);
