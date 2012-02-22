@@ -30,15 +30,18 @@ function compileLess(doc, project_path, f, compress, callback) {
                 paths: [path.dirname(f)].concat(doc._less_paths),
                 filename: f
             }
+            console.log(['creating parser', options]);
             var parser = new (less.Parser)(options);
 
             try {
+                console.log('parsing ' + f);
                 parser.parse(data, function (err, root) {
                     if (err) {
                         less.writeError(err, options);
                         return callback(err);
                     }
                     try {
+                        console.log('converting to css');
                         callback(null, root.toCSS(options));
                     }
                     catch (e) {
@@ -56,17 +59,23 @@ function compileLess(doc, project_path, f, compress, callback) {
     });
 };
 
-module.exports = function (root, path, settings, doc, callback) {
+module.exports = function (root, _path, settings, doc, callback) {
     var filenames = Object.keys(doc._less_compile);
-    async.forEachLimit(filenames, 5, function (filename, cb) {
-        var compress = doc._less_compile[filename].compress;
-        var name = filename.replace(/\.less$/, '.css');
-        compileLess(doc, path, filename, compress, function (err, css) {
+    async.forEachLimit(filenames, 5, function (f, cb) {
+        var compress = doc._less_compile[f].compress;
+        var att_path = doc._less_compile[f].att_path;
+        compileLess(doc, _path, f, compress, function (err, css) {
             if (err) {
-                console.error('Error compiling ' + filename);
+                console.error('Error compiling ' + f);
                 return cb(err);
             }
-            attachments.add(doc, name, name, css);
+            try {
+                console.log(['adding to attachments', att_path]);
+                attachments.add(doc, att_path, att_path, css);
+            }
+            catch (e) {
+                return cb(e);
+            }
             cb();
         });
     },

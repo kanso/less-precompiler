@@ -28,8 +28,12 @@ module.exports = function (root, _path, settings, doc, callback) {
             compile = [compile];
         }
         compile.forEach(function (c) {
-            doc._less_compile[path.resolve(_path, c)] = {
-                compress: settings.less.compress
+            var filename = path.resolve(_path, c);
+            var att = filename.replace(/\.less$/, '.css');
+            doc._less_compile[filename] = {
+                filename: filename,
+                compress: settings.less.compress,
+                att_path: path.relative(_path, att)
             };
         });
     }
