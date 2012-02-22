@@ -6,52 +6,63 @@ var less = require('less'),
     path = require('path');
 
 
-function compileLess(project_path, filename, settings, callback) {
-    // we get a rather cryptic error when trying to compile a file that doesn't
-    // exist, so check early for that and report something sensible
-    path.exists(filename, function (exists) {
+function compileLess(doc, project_path, target, callback) {
+    var f = target.filename;
+    /**
+     * we get a rather cryptic error when trying to compile a file that
+     * doesn't exist, so check early for that and report something
+     * sensible
+     */
+    path.exists(f, function (exists) {
         if (!exists) {
-            return callback(new Error('File does not exist: ' + filename));
+            return callback(new Error('File does not exist: ' + f));
         }
-        console.log('Compiling ' + utils.relpath(filename, project_path));
-        var args = [filename];
-        if (settings.less.compress) {
-            args.unshift('--compress');
-        }
-        var lessc = spawn(__dirname + '/../node_modules/less/bin/lessc', args);
+        console.log('Compiling ' + utils.relpath(f, project_path));
 
-        var css = '';
-        var err_out = '';
-        lessc.stdout.on('data', function (data) {
-            css += data;
-        });
-        lessc.stderr.on('data', function (data) {
-            err_out += data;
-        });
-        lessc.on('exit', function (code) {
-            if (code === 0) {
-                callback(null, css);
+        fs.readFile(f, 'utf-8', function (err, data) {
+            if (err) {
+                return callback(err);
             }
-            else {
-                callback(new Error(err_out));
+            var options = {
+                silent: false,
+                verbose: true,
+                color: true,
+                compress: target.compress,
+                paths: [path.dirname(f)].concat(doc._less_paths),
+                filename: f
+            }
+            var parser = new (less.Parser)(options);
+
+            try {
+                parser.parse(data, function (err, root) {
+                    if (err) {
+                        less.writeError(err, options);
+                        return callback(err);
+                    }
+                    try {
+                        callback(null, root.toCSS(options));
+                    }
+                    catch (e) {
+                        less.writeError(e, options);
+                        callback(e);
+                    }
+                });
+            }
+            catch (e) {
+                // sometimes errors are synchronous
+                less.writeError(e, options);
+                return callback(e);
             }
         });
     });
 };
 
 module.exports = function (root, path, settings, doc, callback) {
-    if (!settings.less || !settings.less.compile) {
-        return callback(null, doc);
-    }
-    var paths = settings.less.compile || [];
-    if (!Array.isArray(paths)) {
-        paths = [paths];
-    }
-    async.forEach(paths, function (p, cb) {
-        var name = p.replace(/\.less$/, '.css');
-        var filename = utils.abspath(p, path);
-        compileLess(path, filename, settings, function (err, css) {
+    async.forEachLimit(doc._less_compile, 5, function (target, cb) {
+        var name = target.filename.replace(/\.less$/, '.css');
+        compileLess(doc, path, target, function (err, css) {
             if (err) {
+                console.error('Error compiling ' + target.filename);
                 return cb(err);
             }
             attachments.add(doc, name, name, css);
@@ -59,6 +70,8 @@ module.exports = function (root, path, settings, doc, callback) {
         });
     },
     function (err) {
+        delete doc._less_paths;
+        delete doc._less_compile;
         callback(err, doc);
     });
 };
