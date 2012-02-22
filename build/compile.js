@@ -6,8 +6,7 @@ var less = require('less'),
     path = require('path');
 
 
-function compileLess(doc, project_path, target, callback) {
-    var f = target.filename;
+function compileLess(doc, project_path, f, compress, callback) {
     /**
      * we get a rather cryptic error when trying to compile a file that
      * doesn't exist, so check early for that and report something
@@ -27,7 +26,7 @@ function compileLess(doc, project_path, target, callback) {
                 silent: false,
                 verbose: true,
                 color: true,
-                compress: target.compress,
+                compress: compress,
                 paths: [path.dirname(f)].concat(doc._less_paths),
                 filename: f
             }
@@ -58,11 +57,13 @@ function compileLess(doc, project_path, target, callback) {
 };
 
 module.exports = function (root, path, settings, doc, callback) {
-    async.forEachLimit(doc._less_compile, 5, function (target, cb) {
-        var name = target.filename.replace(/\.less$/, '.css');
-        compileLess(doc, path, target, function (err, css) {
+    var filenames = Object.keys(doc._less_compile);
+    async.forEachLimit(filenames, 5, function (filename, cb) {
+        var compress = doc._less_compile[filename].compress;
+        var name = filename.replace(/\.less$/, '.css');
+        compileLess(doc, path, filename, compress, function (err, css) {
             if (err) {
-                console.error('Error compiling ' + target.filename);
+                console.error('Error compiling ' + filename);
                 return cb(err);
             }
             attachments.add(doc, name, name, css);

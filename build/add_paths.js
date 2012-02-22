@@ -7,34 +7,31 @@ var path = require('path');
 
 module.exports = function (root, _path, settings, doc, callback) {
     if (!doc._less_paths) {
-        doc._less_paths = [];
+        // use an object to make merging easier
+        doc._less_paths = {};
     }
     if (!doc._less_compile) {
-        doc._less_compile = [];
+        // use an object to make merging easier
+        doc._less_compile = {};
     }
     if (!settings.less) {
         return callback(null, doc);
     }
     if (settings.less.paths) {
-        doc._less_paths = doc._less_paths.concat(
-            settings.less.paths.map(function (p) {
-                return path.resolve(_path, p);
-            })
-        );
+        settings.less.paths.forEach(function (p) {
+            doc._less_paths[path.resolve(_path, p)] = null;
+        });
     }
     if (settings.less.compile) {
         var compile = settings.less.compile;
         if (!Array.isArray(compile)) {
             compile = [compile];
         }
-        doc._less_compile = doc._less_compile.concat(
-            compile.map(function (c) {
-                return {
-                    filename: path.resolve(_path, c),
-                    compress: settings.less.compress
-                };
-            })
-        );
+        compile.forEach(function (c) {
+            doc._less_compile[path.resolve(_path, c)] = {
+                compress: settings.less.compress
+            };
+        });
     }
     callback(null, doc);
 };
